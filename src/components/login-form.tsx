@@ -1,12 +1,9 @@
+import React from "react"
+import { z } from "zod"
+import { userAccounts } from "@/accounts"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -14,6 +11,29 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+  const userSchema = z.object({
+    email: z.string(),
+    password: z.string()
+  })
+  
+
+  function formAction(formData: FormData) {
+    const formValues = Object.fromEntries(formData);
+    const result = userSchema.safeParse(formValues);
+    if(isAuthenticated === false ) {
+      const email = userAccounts.find(userAccount => userAccount.email === result.data?.email && userAccount.password === result.data?.password)
+      if(email) {
+        console.log("User Authenticated")
+      } else {
+        console.log("Access denied")
+      }
+    }
+  };
+  
+  
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -24,11 +44,12 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form action={formAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
+                  name="email"
                   id="email"
                   type="email"
                   placeholder="m@example.com"
@@ -45,7 +66,7 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input name="password" id="password" type="password" required />
               </div>
               <Button type="submit" className="w-full">
                 Login
